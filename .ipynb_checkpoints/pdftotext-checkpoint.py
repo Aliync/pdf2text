@@ -1,15 +1,14 @@
 from pdf2image import convert_from_path
 import requests
 import pytesseract
-from PIL import Image
 import glob
 import os
 class Pdf2Text():
-    def __init__(self,tesseract_config='--tessdata-dir "./langs/"',langs='fas+eng',tessdata="./langs/"):
-        self.pdf_files = glob.glob("./inputs/*.pdf")
-        self.tessdata = tessdata
-        self.temp_folder = "./temp/"
-        self.output = "./output/"
+    def __init__(self,tesseract_config=f'--tessdata-dir "{os.getcwd()}/pdf2text/langs/"',langs='fas+eng',tessdata="/pdf2text/langs/"):
+        self.pdf_files = glob.glob(os.getcwd() + "/pdf2text/inputs/*.pdf")
+        self.tessdata = os.getcwd() + tessdata
+        self.temp_folder = os.getcwd() + "/pdf2text/temp/"
+        self.output = os.getcwd() + "/pdf2text/output/"
         self.langs = langs
         self.tesseract_config = tesseract_config
         os.environ["TESSDATA_PREFIX"] = tessdata
@@ -17,14 +16,16 @@ class Pdf2Text():
         for language in languages:
             response = requests.get("https://github.com/tesseract-ocr/tessdata/raw/main/"+language+".traineddata")
             if response.status_code == 200:
-                with open(self.tessdata + language + ".traineddata", 'wb') as file:
+                language_file_path = os.path.join(self.tessdata, language + ".traineddata")
+                print(language_file_path)
+                with open(language_file_path, 'wb') as file:
                     file.write(response.content)
                     print(f"Info: {language} language File downloaded and saved to '{self.tessdata}'.")
             else:
                 print("Error:Failed to download the file.")
             
     def logger(self,log_message):
-        with open("log.txt",'a') as log:
+        with open(os.getcwd() + "/pdf2text/log.txt",'a') as log:
             log.write(log_message + " \n")
     
     def clear_temp(self):
