@@ -4,20 +4,24 @@ import pytesseract
 import glob
 import os
 class Pdf2Text():
-    def __init__(self,tesseract_config=f'--tessdata-dir "{os.getcwd()}/pdf2text/langs/"',langs='fas+eng',tessdata="/pdf2text/langs/"):
-        self.pdf_files = glob.glob(os.getcwd() + "/pdf2text/inputs/*.pdf")
-        self.tessdata = os.getcwd() + tessdata
-        self.temp_folder = os.getcwd() + "/pdf2text/temp/"
-        self.output = os.getcwd() + "/pdf2text/output/"
+    def __init__(self,langs='fas+eng',tessdata="/langs/"):
+        self.script_directory = os.path.dirname(os.path.abspath(__file__))
+        self.pdf_files = glob.glob(self.script_directory + "/inputs/*.pdf")
+        self.tessdata = self.script_directory + tessdata
+        self.temp_folder = self.script_directory + "/temp/"
+        self.output = self.script_directory + "/output/"
         self.langs = langs
-        self.tesseract_config = tesseract_config
+        self.tesseract_config = f'--tessdata-dir {self.tessdata}'
+        os.makedirs(self.script_directory + "/inputs/",exist_ok=True)
+        os.makedirs(self.output,exist_ok=True)
+        os.makedirs(self.tessdata,exist_ok=True)
+        os.makedirs(self.temp_folder,exist_ok=True)
         os.environ["TESSDATA_PREFIX"] = tessdata
         languages = self.langs.split('+')
         for language in languages:
             response = requests.get("https://github.com/tesseract-ocr/tessdata/raw/main/"+language+".traineddata")
             if response.status_code == 200:
                 language_file_path = os.path.join(self.tessdata, language + ".traineddata")
-                print(language_file_path)
                 with open(language_file_path, 'wb') as file:
                     file.write(response.content)
                     print(f"Info: {language} language File downloaded and saved to '{self.tessdata}'.")
@@ -25,7 +29,7 @@ class Pdf2Text():
                 print("Error:Failed to download the file.")
             
     def logger(self,log_message):
-        with open(os.getcwd() + "/pdf2text/log.txt",'a') as log:
+        with open(self.script_directory + "/log.txt",'a') as log:
             log.write(log_message + " \n")
     
     def clear_temp(self):
