@@ -4,13 +4,14 @@ import pytesseract
 import glob
 import os
 class Pdf2Text():
-    def __init__(self,langs='fas+eng',tessdata="/langs/"):
+    def __init__(self,langs='fas+eng',tessdata="/langs/",dpi=250):
         self.script_directory = os.path.dirname(os.path.abspath(__file__))
         self.pdf_files = glob.glob(self.script_directory + "/inputs/*.pdf")
         self.tessdata = self.script_directory + tessdata
         self.temp_folder = self.script_directory + "/temp/"
         self.output = self.script_directory + "/output/"
         self.langs = langs
+        self.dpi = dpi
         self.tesseract_config = f'--tessdata-dir {self.tessdata}'
         os.makedirs(self.script_directory + "/inputs/",exist_ok=True)
         os.makedirs(self.output,exist_ok=True)
@@ -71,7 +72,7 @@ class Pdf2Text():
                 
     def pdf_to_images(self,pdf):
         self.logger(f"Info: PDF {pdf} is being processed in pdf_to_images")
-        pages = convert_from_path(pdf, dpi=500,fmt='TIFF')
+        pages = convert_from_path(pdf, dpi=self.dpi,fmt='TIFF')
         image_counter = 1
         for page in pages:
             image_name = self.temp_folder + os.path.splitext(os.path.basename(pdf))[0] + '_' + str(image_counter) + '.tiff'
@@ -81,6 +82,7 @@ class Pdf2Text():
 
 
     def pdf_to_text(self):
+        self.pdf_files = glob.glob(self.script_directory + "/inputs/*.pdf")
         for pdf in self.pdf_files:
             if pdf.endswith('.pdf'):
                 self.pdf_to_images(pdf)
