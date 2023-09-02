@@ -1,4 +1,4 @@
-from pdf2image import convert_from_path
+from pdf2image import convert_from_path,pdfinfo_from_path
 import requests
 import pytesseract
 import glob
@@ -72,12 +72,21 @@ class Pdf2Text():
                 
     def pdf_to_images(self,pdf):
         self.logger(f"Info: PDF {pdf} is being processed in pdf_to_images")
-        pages = convert_from_path(pdf, dpi=self.dpi,fmt='TIFF')
-        image_counter = 1
-        for page in pages:
-            image_name = self.temp_folder + os.path.splitext(os.path.basename(pdf))[0] + '_' + str(image_counter) + '.tiff'
-            page.save(image_name, format='TIFF')
-            image_counter += 1
+        pgs = int(pdfinfo_from_path(pdf)['Pages'])
+        if pgs>=100:
+            image_counter = 1
+            for i in range(1,pgs):
+                pages = convert_from_path(pdf, dpi=self.dpi,fmt='TIFF',first_page=i,last_page=i+1)
+                image_name = self.temp_folder + os.path.splitext(os.path.basename(pdf))[0] + '_' + str(image_counter) + '.tiff'
+                pages[0].save(image_name, format='TIFF')
+                image_counter += 1
+        else:
+            pages = convert_from_path(pdf, dpi=self.dpi,fmt='TIFF')
+            image_counter = 1
+            for page in pages:
+                image_name = self.temp_folder + os.path.splitext(os.path.basename(pdf))[0] + '_' + str(image_counter) + '.tiff'
+                page.save(image_name, format='TIFF')
+                image_counter += 1
                 
 
 
